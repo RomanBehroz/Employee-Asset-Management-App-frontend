@@ -16,6 +16,10 @@ const Profile = () => {
        /** API URL FOR EMPLOYEE */
     const EMPLOYEE_URL = "http://localhost:8080/employees"
 
+    const CURRENT_ASSET_URL = "http://localhost:8080/assets/emp"
+    const RETURN_URL = "http://localhost:8080/return-list"
+    const RETURN_ASSET_URL = "http://localhost:8080/return-asset"
+
     /** EMPLOYEE DATA STORED IN useState HOOKS */
     const [firstname, setFirstname] = useState('')
     const [lastname, setLastname] = useState('')
@@ -34,24 +38,33 @@ const Profile = () => {
 
   const [loading, setLoading] = useState(true)
   const [handover, setHandover] = useState(null)
+  const [currentAssets, setCurrentAssets] = useState(null)
+  const [returns, setReturns] = useState(null)
+
 
   /**
    * THIS METHOD FETCHES THE EMPLOYEE HANDOVERS(ASSETS THAT ARE HANDED OVER TO THE EMPLOYEE)
    */
-  useEffect(() =>{
-    const fetchData = async () =>{
-        setLoading(true)
-        try{
-            const response = await axios.get(HANDOVER_URL+'/'+id)
-            const sort = response.data.sort((a, b) => b.handoverId - a.handoverId)
-            setHandover(sort)
-        }catch (error){
+   const fetchData = async () =>{
+    setLoading(true)
+    try{
+        const response = await axios.get(HANDOVER_URL+'/'+id)
+        const sort = response.data.sort((a, b) => b.handoverId - a.handoverId)
 
-        }
-      
- 
-        setLoading(false)
-    };
+        const response2 = await axios.get( CURRENT_ASSET_URL+'/'+id)
+        const response3 = await axios.get( RETURN_URL+'/'+id)
+        setCurrentAssets(response2.data)
+        setReturns(response3.data)
+        setHandover(sort)
+    }catch (error){
+
+    }
+  
+
+    setLoading(false)
+};
+  useEffect(() =>{
+   
     fetchData()
   }, [])
 
@@ -136,6 +149,20 @@ const Profile = () => {
     fetchData()
     }, [])
 
+
+    /** Return Asset Method, responds on return asset button */
+    const returnAsset = (assId) =>{
+
+        const newAsset ={
+            assetId: assId
+        }
+        axios.post(RETURN_ASSET_URL+'/'+id, newAsset).catch((error)=>{
+            console.log(error)
+        }).then((res) =>{
+          fetchData()
+        })
+    }
+
   return (
     <div className='page'>
     <div className='flex'>
@@ -213,9 +240,48 @@ const Profile = () => {
         <br />
         <br />
         {
-            /** HANDOVERS TABLE */
+            /** Currently used Assets TABLE */
         }
-   
+
+
+<div className='handovers'>
+        
+            <h3 className='page-title'>Currently in use</h3>
+            <table  className='content-table'>
+                <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Type</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Serial nr</th>
+                            <th>Action</th>
+                        </tr>
+                </thead>
+                            <tbody>   {
+                    !loading && (
+                    currentAssets.map(
+                    (asset, index) => 
+                            <tr key={index}>
+                                    <td>{index+1}</td>
+                                    <td>{asset.type}</td>
+                                    <td>{asset.brand}</td>
+                                    <td>{asset.model}</td>
+                                    <td>{asset.serialNumber}</td>
+                                    <td><div onClick={()=>returnAsset(asset.assetId)} className='btn btn-purple'>Return Asset</div></td>
+                                   
+                            </tr>
+                                    ))
+                    }
+                   
+
+                </tbody>
+            </table>
+        </div>
+
+                {
+                    /** HANDOVERS TABLE */
+                }
                <div className='handovers'>
         
             <h3 className='page-title'>Handovers</h3>
@@ -249,6 +315,45 @@ const Profile = () => {
                 </tbody>
             </table>
         </div>
+
+        {
+                    /** RETURNS TABLE */
+                }
+               <div className='handovers'>
+        
+            <h3 className='page-title'>Returns</h3>
+            <table  className='content-table'>
+                <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Type</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Serial nr</th>
+                            <th>Return date</th>
+                        </tr>
+                </thead>
+                            <tbody>   {
+                    !loading && (
+                    returns.map(
+                    (ret, index) => 
+                            <tr key={index}>
+                                    <td>{index+1}</td>
+                                    <td>{ret.asset.type}</td>
+                                    <td>{ret.asset.brand}</td>
+                                    <td>{ret.asset.model}</td>
+                                    <td>{ret.asset.serialNumber}</td>
+                                    <td>{ moment(ret.returnDate).format('DD.MM.YYYY')}</td>
+                            </tr>
+                                    ))
+                    }
+                   
+
+                </tbody>
+            </table>
+        </div>
+
+      
                     <br />
                     <div className='flex'> <div></div>   
                     {
@@ -263,7 +368,7 @@ const Profile = () => {
                         addAssetActive ? (<>  <section className='add-new-asset'>
                         <h3 className='page-title'> Add new Asset</h3>
                         <br />
-                        <AddNewAssetToEmp id={id}/>
+                        <AddNewAssetToEmp refresh={fetchData} id={id}/>
                     </section></>):(<></>)
                     }
       

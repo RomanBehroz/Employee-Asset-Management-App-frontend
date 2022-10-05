@@ -10,7 +10,7 @@ import axios from 'axios'
  * @param id ID of the Employee to assign the Asset to
  * @returns A Form to insert Asset Information and Select Employee for assignment
  */
-const AddNewAssetToEmp = ({id}) => {
+const AddNewAssetToEmp = ({id, refresh}) => {
 
     /**
      * Hooks to store data
@@ -68,7 +68,7 @@ const AddNewAssetToEmp = ({id}) => {
           
               
             }).then((res) =>{
-                window.location.reload();
+               refresh()
             })
       
     }
