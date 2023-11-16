@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import {UserContext} from "../context";
 /**
  *  @Author Roman Behroz
  * @returns A Form to insert Asset Information , on this page a user can add an Asset to the System
@@ -31,12 +32,16 @@ const AddAsset = () => {
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(true)
-
+    const {logoutUser, isTokenExpired} = useContext(UserContext);
   
     /**
      * Fetching Data, fetching Employee names for assgining Asset to
      */
     useEffect(() =>{
+        if(isTokenExpired()){
+            logoutUser()
+        }
+
       const fetchData = async () =>{
           setLoading(true)
           try{
@@ -157,7 +162,7 @@ const AddAsset = () => {
                 <option value='0'>None</option>
             {
         !loading && (
-        employees.map(
+        employees?.map(
         (employee) => 
   
                 <option value={employee.employeeId}>{employee.firstName +' ' +employee.lastName}</option>

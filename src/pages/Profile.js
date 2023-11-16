@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from 'react'
+import React, {useContext, useEffect, useState} from 'react'
 import { useNavigate, useParams} from 'react-router-dom';
 import axios from 'axios';
 import { AiOutlineEdit, AiOutlineClose} from 'react-icons/ai'
 import moment from 'moment'
 import AddNewAssetToEmp from '../components/AddNewAssetToEmp';
+import {UserContext} from "../context";
 
 /**
  *  @Author Roman Behroz
@@ -17,8 +18,8 @@ const Profile = () => {
     const EMPLOYEE_URL = "http://localhost:8080/employees"
 
     const CURRENT_ASSET_URL = "http://localhost:8080/assets/emp"
-    const RETURN_URL = "http://localhost:8080/return-list"
-    const RETURN_ASSET_URL = "http://localhost:8080/return-asset"
+    const RETURN_URL = "http://localhost:8080/return/list"
+    const RETURN_ASSET_URL = "http://localhost:8080/return/asset"
 
     /** EMPLOYEE DATA STORED IN useState HOOKS */
     const [firstname, setFirstname] = useState('')
@@ -40,12 +41,15 @@ const Profile = () => {
   const [handover, setHandover] = useState(null)
   const [currentAssets, setCurrentAssets] = useState(null)
   const [returns, setReturns] = useState(null)
-
+    const {logoutUser, isTokenExpired} = useContext(UserContext);
 
   /**
    * THIS METHOD FETCHES THE EMPLOYEE HANDOVERS(ASSETS THAT ARE HANDED OVER TO THE EMPLOYEE)
    */
    const fetchData = async () =>{
+      if(isTokenExpired()){
+          logoutUser()
+      }
     setLoading(true)
     try{
         const response = await axios.get(HANDOVER_URL+'/'+id)
@@ -130,23 +134,25 @@ const Profile = () => {
     }
 
     /** FETCHING EMPLOYEE DATA*/
+    const fetchEmpData = async () =>{
+        try{
+            const response = await axios.get(EMPLOYEE_URL + '/'+id).catch((error) =>{
+                setErrorActive(true)
+                setErrormsg(error.response.data.message)
+            })
+            setFirstname(response.data.firstName)
+            setLastname(response.data.lastName)
+            setTitle(response.data.title)
+            setEmail(response.data.email)
+        }catch(error){
+
+        }
+
+};
     useEffect(() =>{
-           const fetchData = async () =>{
-            try{
-                const response = await axios.get(EMPLOYEE_URL + '/'+id).catch((error) =>{
-                    setErrorActive(true)
-                    setErrormsg(error.response.data.message)
-                })
-                setFirstname(response.data.firstName)
-                setLastname(response.data.lastName)
-                setTitle(response.data.title)
-                setEmail(response.data.email)
-            }catch(error){
-
-            }
-
-    };
+         
     fetchData()
+    fetchEmpData()
     }, [])
 
 
@@ -165,12 +171,15 @@ const Profile = () => {
 
   return (
     <div className='page'>
-    <div className='flex'>
-    <h2 className='page-title'>{firstname +' ' + lastname} </h2>
+        <h2 className='page-title'>Employee Profile</h2>
+        <br />
+        
+    <div className='flex flex-title'>
+    <h3 className='page-title'>{firstname +' ' + lastname} <img className='active-icon' src="/images/check.png" alt="Profile is active" /></h3> 
     
     <div>
         { /**EDIT AND CLOSE BUTTON, if error occurs button will not be shown*/}
-        {errorActive? (<></>):(<>{editmode ? (<><div onClick={()=> setEditmode(!editmode)} className='close-btn'>Close<AiOutlineClose className='edit-icon'/></div></>) 
+        {errorActive? (<></>):(<>{editmode ? (<><div onClick={()=> (setEditmode(!editmode), editmode ? (fetchEmpData()) : (<></>))} className='close-btn'>Close<AiOutlineClose className='edit-icon'/></div></>) 
         : 
         (<><div onClick={()=> setEditmode(!editmode)} className='edit-btn'>Edit<AiOutlineEdit className='edit-icon'/></div></>)}</>)}
         
@@ -237,14 +246,29 @@ const Profile = () => {
             </form>
           </>)}</>)
         }
+        <br /> <br /> <br /><br />
+        <h2 className='page-title'>Assets</h2>
         <br />
-        <br />
+
+        {
+                        addAssetActive ? (<><div onClick={()=> setAddAssetActive(!addAssetActive)} className='btn btn-gray'>X Close</div></>):(<>  <div onClick={()=> setAddAssetActive(!addAssetActive)} className='btn btn-purple'>+ Add Asset</div></>)
+                    }
+                  
+                    
+                
+                    <br />
+
+                    {
+                        addAssetActive ? (<>  <section className='add-new-asset'>
+                        <h3 className='page-title'> Add a new Asset to the Employee</h3>
+                        <br />
+                        <AddNewAssetToEmp refresh={fetchData} id={id}/>
+                        <br /> </section></>):(<></>)
+                    }
         {
             /** Currently used Assets TABLE */
         }
-
-
-<div className='handovers'>
+        <div className='handovers-new'>
         
             <h3 className='page-title'>Currently in use</h3>
             <table  className='content-table'>
@@ -260,7 +284,7 @@ const Profile = () => {
                 </thead>
                             <tbody>   {
                     !loading && (
-                    currentAssets.map(
+                    currentAssets?.map(
                     (asset, index) => 
                             <tr key={index}>
                                     <td>{index+1}</td>
@@ -282,10 +306,10 @@ const Profile = () => {
                 {
                     /** HANDOVERS TABLE */
                 }
-               <div className='handovers'>
+               <div className='handovers-new'>
         
             <h3 className='page-title'>Handovers</h3>
-            <table  className='content-table'>
+            <table   className='content-table'>
                 <thead>
                         <tr>
                             <th>#</th>
@@ -298,7 +322,7 @@ const Profile = () => {
                 </thead>
                             <tbody>   {
                     !loading && (
-                    handover.map(
+                    handover?.map(
                     (hand, index) => 
                             <tr key={index}>
                                     <td>{index+1}</td>
@@ -319,7 +343,7 @@ const Profile = () => {
         {
                     /** RETURNS TABLE */
                 }
-               <div className='handovers'>
+               <div className='handovers-new'>
         
             <h3 className='page-title'>Returns</h3>
             <table  className='content-table'>
@@ -335,7 +359,7 @@ const Profile = () => {
                 </thead>
                             <tbody>   {
                     !loading && (
-                    returns.map(
+                    returns?.map(
                     (ret, index) => 
                             <tr key={index}>
                                     <td>{index+1}</td>
@@ -355,23 +379,9 @@ const Profile = () => {
 
       
                     <br />
-                    <div className='flex'> <div></div>   
-                    {
-                        addAssetActive ? (<><div onClick={()=> setAddAssetActive(!addAssetActive)} className='btn btn-gray'>Close</div></>):(<>  <div onClick={()=> setAddAssetActive(!addAssetActive)} className='btn btn-purple'>Add Asset</div></>)
-                    }
-                  
-                    </div>
-                
-                    <br />
-
-                    {
-                        addAssetActive ? (<>  <section className='add-new-asset'>
-                        <h3 className='page-title'> Add new Asset</h3>
-                        <br />
-                        <AddNewAssetToEmp refresh={fetchData} id={id}/>
-                    </section></>):(<></>)
-                    }
+       
       
+                
 
     </div>
   )

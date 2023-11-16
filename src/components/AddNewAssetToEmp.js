@@ -68,6 +68,10 @@ const AddNewAssetToEmp = ({id, refresh}) => {
           
               
             }).then((res) =>{
+                setBrand('')
+                setModel('')
+                setType('')
+                setSerialnr('')
                refresh()
             })
       

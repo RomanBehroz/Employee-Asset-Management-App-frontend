@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import {UserContext} from "../context";
 /**
  *  @Author Roman Behroz
  * @returns Assets Table, user can see all the Assets
@@ -14,11 +15,15 @@ const Assets = () => {
     const [assets, setAssets] = useState(null);
     
     
-
+    const navigate = useNavigate()
+    const {logoutUser, isTokenExpired} = useContext(UserContext);
     /**
      * Fetching Data/Assets
      */
     useEffect(() =>{
+        if(isTokenExpired()){
+            logoutUser()
+        }
         const fetchData = async () =>{
             setLoading(true)
             try{
@@ -53,15 +58,15 @@ const Assets = () => {
 
        
                 { !loading && (
-        assets.reverse().map(
+        assets?.reverse().map(
         (as, index) => 
-                <tr key={as.assetId}>
+                <tr key={as.assetId} onClick={()=>navigate('/assets/'+as.assetId)}>
                     <td>{index+1}</td>
                     <td>{as.type}</td>
                     <td>{as.brand}</td>
                     <td>{as.model}</td>
                     <td>{as.serialNumber}</td>
-                    <td>  {as.currentUser === null ? (<>None</>):(<>    <Link className='link' to={`/employees/${as.currentUser.employeeId}`}>{ as.currentUser.firstName + ' ' +as.currentUser.lastName }</Link></>)
+                    <td>{as.currentUser === null ? (<>None</>):(<>    <Link className='link' to={`/employees/${as.currentUser.employeeId}`}>{ as.currentUser.firstName + ' ' +as.currentUser.lastName }</Link></>)
                     
                     }
 

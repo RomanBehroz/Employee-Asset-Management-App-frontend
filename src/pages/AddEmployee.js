@@ -1,16 +1,23 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import { useState } from 'react'
 import axios from "axios"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom'
+import {UserContext} from "../context";
+import jwtDecode from "jwt-decode";
 /**
  *  @Author Roman Behroz
  * @returns A Form to insert Employee Information , on this page a user can add an Employee to the System
  */
 const AddEmployee = () => {
 
+    const {logoutUser, isTokenExpired, getAccessTokenFromStorage} = useContext(UserContext);
+
     const navigate = useNavigate()
+
+
+
 
     /**
      * Hooks to store Data
@@ -19,8 +26,9 @@ const AddEmployee = () => {
     const [lastname, setLastname] = useState('')
     const [email, setEmail] = useState('')
     const [title, setTitle] = useState('')
-    const [errormsg, setErrormsg] = useState('')
-    const [errorActive, setErrorActive] = useState(false) 
+    const [messsage, setMesssage] = useState('')
+    const [messageActive, setMessageActive] = useState(false)
+    const [messageClass, setMessageClass] = useState('')
     /**
      * Backend Api
      */
@@ -31,27 +39,31 @@ const AddEmployee = () => {
      * @param {} e 
      * @returns 
      */
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault()
 
         if(!firstname){
-           setErrormsg('Please ad a first name')
-           setErrorActive(true) 
+           setMesssage('Please ad a first name')
+            setMessageClass('alert error')
+           setMessageActive(true)
             return
         }
         if(!lastname){
-            setErrormsg('Please add a last name!') 
-            setErrorActive(true) 
+            setMesssage('Please add a last name!')
+            setMessageClass('alert error')
+            setMessageActive(true)
             return
         }
         if(!email){
-            setErrormsg('Please add an email!') 
-            setErrorActive(true) 
+            setMesssage('Please add an email!')
+            setMessageClass('alert error')
+            setMessageActive(true)
             return
         }
         if(!title){
-            setErrormsg('Please add a title!') 
-            setErrorActive(true) 
+            setMesssage('Please add a title!')
+            setMessageClass('alert error')
+            setMessageActive(true)
             return
         }
 
@@ -62,15 +74,51 @@ const AddEmployee = () => {
             title: title
         }
      
-            axios.post(EMPLOYEE_URL, newEmp ).catch((error) => {
-                setErrorActive(true)
-                setErrormsg(error.response.data.message)
-               
-           
-              
-            }).then(res =>{
-                   navigate('/employees')
+            // axios.post(EMPLOYEE_URL, newEmp ).catch((error) => {
+            //     setErrorActive(true)
+            //     setErrormsg(error.response.data.message)
+            //
+            // }).then(res =>{
+            //        navigate('/employees')
+            // }).catch(error =>{
+            //     console.log(error)
+            // })
+
+        const headers = {
+            'Authorization': `Bearer ${getAccessTokenFromStorage()}`,
+            'Content-Type': 'application/json'
+        };
+
+
+        axios.post(EMPLOYEE_URL, newEmp, {
+            headers: headers
+        })
+            .then(response => {
+                setMessageClass('alert success')
+               setMesssage('Employee added successfully!')
+                setMessageActive(true)
+                setFirstname('')
+                setLastname('')
+                setEmail('')
+                setTitle('')
+
+                setTimeout(() => {
+                    setMessageActive(false)
+                    // Your code logic here
+                }, 10000);
+
+                // Handle the response here
             })
+            .catch(error => {
+                if(error.response.status === 403){
+                    setMessageClass('alert error')
+                    setMesssage('You are not authorized for this action.')
+                    setMessageActive(true)
+
+                }
+                console.error('Error:', error.response.status);
+                // Handle errors here
+            });
 
        
     }
@@ -80,8 +128,9 @@ const AddEmployee = () => {
         <h2 className='page-title'>Add Employee</h2>
         <br />
         {
-          errorActive ? (   <div className='alert error'>{errormsg}<div onClick={() => setErrorActive(false)} className='closebtn'>x</div></div> ):(<></>)
+          messageActive ? (   <div className={messageClass}>{messsage}<div onClick={() => setMessageActive(false)} className='closebtn'>x</div></div> ):(<></>)
         }
+
      
         <form className='add-form' onSubmit={onSubmit}>
 
