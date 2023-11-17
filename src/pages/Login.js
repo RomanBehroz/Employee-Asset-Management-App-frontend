@@ -5,6 +5,7 @@ import jwtDecode from "jwt-decode";
 import {UserContext} from "../context";
 import './login.css'
 import {Navigate, Route, Routes, useNavigate} from "react-router-dom";
+import AlertMessage from "../components/AlertMessage";
 
 /**
  *  @Author Roman Behroz
@@ -18,10 +19,21 @@ const Login = () => {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const navigate = useNavigate();
+
+    const [message, setMessage] = useState('')
+    const [messageActive, setMessageActive] = useState(false)
+    const [messageClass, setMessageClass] = useState('')
     const login = async () => {
 
 
             try {
+
+                if((username || password) ===""){
+                    setMessage('Please enter a username and password.')
+                    setMessageClass('alert error')
+                    setMessageActive(true)
+                }
+
                 const formData = new URLSearchParams();
                 formData.append('username', username);
                 formData.append('password', password);
@@ -83,14 +95,18 @@ const Login = () => {
                 <br/>
                 <br/>
                <h1 className='text-center'>Employee Asset Management</h1>
+                <br/>
 
             <div className='login-form'>
+
                 <div className='login-form-left'>
                 <h1>Login</h1>
                     <div className='vertical-line'></div>
                 </div>
-                <div className='login-form-right'>
 
+
+                <div className='login-form-right'>
+                    <AlertMessage messageActive={messageActive} messageClass={messageClass} message={message} setMessageActive={setMessageActive}/>
                     <div className='form-items'>
                         <p>Username</p>
                         <input value={username} onChange={(e) => setUsername(e.target.value)} type='text' name='username' placeholder='Enter your username'/>

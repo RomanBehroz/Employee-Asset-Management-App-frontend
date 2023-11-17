@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom'
 import {UserContext} from "../context";
 import jwtDecode from "jwt-decode";
+import AlertMessage from "../components/AlertMessage";
 /**
  *  @Author Roman Behroz
  * @returns A Form to insert Employee Information , on this page a user can add an Employee to the System
@@ -26,7 +27,7 @@ const AddEmployee = () => {
     const [lastname, setLastname] = useState('')
     const [email, setEmail] = useState('')
     const [title, setTitle] = useState('')
-    const [messsage, setMesssage] = useState('')
+    const [message, setMessage] = useState('')
     const [messageActive, setMessageActive] = useState(false)
     const [messageClass, setMessageClass] = useState('')
     /**
@@ -43,25 +44,25 @@ const AddEmployee = () => {
         e.preventDefault()
 
         if(!firstname){
-           setMesssage('Please ad a first name')
+           setMessage('Please ad a first name')
             setMessageClass('alert error')
            setMessageActive(true)
             return
         }
         if(!lastname){
-            setMesssage('Please add a last name!')
+            setMessage('Please add a last name!')
             setMessageClass('alert error')
             setMessageActive(true)
             return
         }
         if(!email){
-            setMesssage('Please add an email!')
+            setMessage('Please add an email!')
             setMessageClass('alert error')
             setMessageActive(true)
             return
         }
         if(!title){
-            setMesssage('Please add a title!')
+            setMessage('Please add a title!')
             setMessageClass('alert error')
             setMessageActive(true)
             return
@@ -95,7 +96,7 @@ const AddEmployee = () => {
         })
             .then(response => {
                 setMessageClass('alert success')
-               setMesssage('Employee added successfully!')
+               setMessage('Employee added successfully!')
                 setMessageActive(true)
                 setFirstname('')
                 setLastname('')
@@ -112,7 +113,7 @@ const AddEmployee = () => {
             .catch(error => {
                 if(error.response.status === 403){
                     setMessageClass('alert error')
-                    setMesssage('You are not authorized for this action.')
+                    setMessage('You are not authorized for this action.')
                     setMessageActive(true)
 
                 }
@@ -127,9 +128,11 @@ const AddEmployee = () => {
     <div className='page'>
         <h2 className='page-title'>Add Employee</h2>
         <br />
-        {
-          messageActive ? (   <div className={messageClass}>{messsage}<div onClick={() => setMessageActive(false)} className='closebtn'>x</div></div> ):(<></>)
-        }
+        {/*{*/}
+        {/*  messageActive ? (   <div className={messageClass}>{messsage}<div onClick={() => setMessageActive(false)} className='closebtn'>x</div></div> ):(<></>)*/}
+        {/*}*/}
+
+        <AlertMessage messageActive={messageActive} messageClass={messageClass} message={message} setMessageActive={setMessageActive}/>
 
      
         <form className='add-form' onSubmit={onSubmit}>

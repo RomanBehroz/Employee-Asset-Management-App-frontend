@@ -353,6 +353,7 @@ color: #4A4A4A;
 
 .btn-purple{
   background-color: #DEE0F9;
+
 }
 
 
@@ -368,6 +369,7 @@ color: #4A4A4A;
 .btn:hover{
   background-color:#a49dd2;
   color: white;
+
 
 }
 
@@ -408,10 +410,13 @@ color: #4A4A4A;
 
 .alert {
   position: relative;
-  padding: 0.7rem 0.7rem;
+  padding: 0.7rem 0.8rem;
   margin-bottom: 1rem;
   border: 1px solid transparent;
-  border-radius: 0.25rem;
+  border-radius: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
 }
 .error {
@@ -421,22 +426,23 @@ color: #4A4A4A;
 }
 
 /* The close button */
-.closebtn {
+.closebtn img {
   margin-left: 15px;
   color: rgb(103, 103, 103);
- 
   font-weight: bold;
   float: right;
   font-size: 22px;
   line-height: 20px;
   cursor: pointer;
-  transition: 0.3s;
+  height: 20px;
+  transition: transform 0.3s ease-in-out;
 }
 
-/* When moving the mouse over the close button */
-.closebtn:hover {
-  color: rgb(47, 47, 47);
+.closebtn:hover img{
+  transform: rotate(90deg);
 }
+
+
 .hide {
   display: none;
 }
@@ -670,6 +676,7 @@ nav{
 
   .btn{
     width: 100%;
+    transition: transform 0.3s ease-in-out;
   }
 
   .cards{
